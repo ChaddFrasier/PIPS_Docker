@@ -1,0 +1,11 @@
+version: '1'
+
+services:
+  pips:
+    build: .
+    image: continuumio/miniconda3:latest
+    container_name: PIP-Server
+    ports: 8080:8080
+    hostname: PIP-Server
+    stdin_open: true
+    tty: true
