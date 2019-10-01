@@ -1,2 +1,2 @@
 # PIPS_Docker
-Home of docker version of PIPS
+This is a docker image implimentation of the PIPS USGS project. 
