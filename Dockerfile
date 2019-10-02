@@ -24,7 +24,8 @@ ENV APP=/PIPS
 RUN useradd --create-home --home-dir $HOME --shell /bin/bash usgs
 
 # Copy all code files to /PIPS
-RUN git clone -n https://github.com/ChaddFrasier/PIPS.git ./PIPS
+WORKDIR $APP
+RUN git clone -n https://github.com/ChaddFrasier/PIPS.git
 
 # install isis3, Author: Seignovert
 WORKDIR $HOME
