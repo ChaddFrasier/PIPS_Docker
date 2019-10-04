@@ -23,9 +23,6 @@ ENV APP=/PIPS
 # Create user and home, Author: Seignovert
 RUN useradd --create-home --home-dir $HOME --shell /bin/bash usgs
 
-# Copy all code files to /PIPS
-RUN git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
-
 # install isis3, Author: Seignovert
 WORKDIR $HOME
 
@@ -57,10 +54,11 @@ EndGroup" > $HOME/.Isis/IsisPreferences
 # install node js and npm into root dir
 WORKDIR $HOME/..
 
-# install dependencies and nodejs and npm then check install
+# install dependencies and nodejs and npm then Copy all code files to /PIPS
 RUN apt-get install -y curl software-properties-common && \
   curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
-  apt-get install -y nodejs
+  apt-get install -y nodejs && \
+  git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
 
 # move to working directory
 WORKDIR $APP
