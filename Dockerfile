@@ -14,7 +14,7 @@ RUN apt-get -qq update && \
     librsvg2-dev && \
     apt-get install -y curl software-properties-common && \
     curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y nodejs
 
 # Set ENV variables, Author: Seignovert
 ENV HOME=/usgs
