@@ -3,6 +3,7 @@ FROM continuumio/miniconda3:latest
 LABEL maintainer="ChaddFrasier"
 
 # Install shared libs and rsync, Author: Seignovert
+# also install nodejs npm
 RUN apt-get -qq update && \
     apt-get install -y rsync \
     libglu1 \
@@ -10,7 +11,10 @@ RUN apt-get -qq update && \
     apt-get -y install build-essential libcairo2-dev \
     libpango1.0-dev \
     libjpeg-dev \
-    librsvg2-dev
+    librsvg2-dev && \
+    apt-get install -y curl software-properties-common && \
+    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+    apt-get install -y nodejs && \
 
 # Set ENV variables, Author: Seignovert
 ENV HOME=/usgs
@@ -51,14 +55,11 @@ Group = SessionLog\n\
   FileOutput     = Off\n\
 EndGroup" > $HOME/.Isis/IsisPreferences
 
-# install node js and npm into root dir
+# clone code into PIPS from root
 WORKDIR $HOME/..
 
 # install dependencies and nodejs and npm then Copy all code files to /PIPS
-RUN apt-get install -y curl software-properties-common && \
-  curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
-  apt-get install -y nodejs && \
-  git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
+RUN git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
 
 # move to working directory
 WORKDIR $APP
