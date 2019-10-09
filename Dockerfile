@@ -36,6 +36,7 @@ RUN conda config --add channels conda-forge && \
     conda create -y --prefix ${ISISROOT} && \
     conda install -y --prefix ${ISISROOT} isis3
 
+# TODO: combine these two calls
 # Sync partial `base` data
 RUN rsync -azv --delete --partial --inplace \
     --exclude='testData' \
