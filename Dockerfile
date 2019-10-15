@@ -64,7 +64,7 @@ RUN git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
 # move to working directory
 WORKDIR $APP
 
-# install all modules and update canvas and all other binaries
+# install all modules and update canvas and update binaries
 RUN npm install && \
     npm install canvas && \
     npm rebuild bcrypt --update-binary
