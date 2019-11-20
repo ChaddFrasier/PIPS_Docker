@@ -6,10 +6,23 @@ I used this repository to install ISIS3 in the manner that my application can ac
 docker container's command line. With the help from this docker container, I successfully installed ISIS3 and Node.js into the same docker container.
 
 Simply pull the image down using the install command and then run it using the run command. 
-When the server is running go to `http://localhost:8080/`
+When the server is running go to `http://localhost:8000/`
 
 ## Install
-`docker pull chaddfrasier/pips-usgs`
+`docker pull chaddfrasier/pips-usgs` or `docker pull chaddfrasier/pips-usgs:<tag>`
 
 ## Running 
-`docker run --rm -p 8080:8080 pips-usgs`
+`docker run --rm --name pips -p 8000:8080 chaddfrasier/pips-usgs`
+
+## Stopping
+`docker kill pips`
+
+## Uninstall
+1. `docker image ls` or `docker images`
+
+```
+REPOSITORY               TAG                 IMAGE ID            CREATED             SIZE
+chaddfrasier/pips-usgs   latest              2633ea40ac3b        15 hours ago        18.2GB
+```
+
+2. `docker rmi <IMAGE ID>`

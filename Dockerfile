@@ -56,7 +56,7 @@ EndGroup" > $HOME/.Isis/IsisPreferences
 # clone code into PIPS from root
 WORKDIR $HOME/..
 
-# install dependencies and nodejs and npm then Copy all code files to /PIPS
+# Copy all code files to /PIPS
 RUN git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
 
 # move to working directory
