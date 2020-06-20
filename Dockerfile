@@ -18,7 +18,7 @@ RUN apt-get -qq update && \
 
 # Set ENV variables, Author: Seignovert
 ENV HOME=/usgs
-ENV ISISROOT=$HOME/isis3 ISIS3DATA=$HOME/data
+ENV ISISROOT=$HOME/isis ISIS3DATA=$HOME/data
 ENV PATH=$PATH:$ISISROOT/bin
 
 # create app dir
@@ -34,12 +34,12 @@ WORKDIR $HOME
 RUN conda config --add channels conda-forge && \
     conda config --add channels usgs-astrogeology && \
     conda create -y --prefix ${ISISROOT} && \
-    conda install -y --prefix ${ISISROOT} isis3
+    conda install -y --prefix ${ISISROOT} isis
 
 # Sync partial `base` data
 RUN rsync -azv --delete --partial --inplace \
     --exclude='testData' \
-    isisdist.astrogeology.usgs.gov::isis3data/data/base $ISIS3DATA && \
+    isisdist.astrogeology.usgs.gov::isisdata/data/base $ISIS3DATA && \
     rm -rf $ISISROOT/doc $ISISROOT/docs
 
 # Add Isis User Preferences
