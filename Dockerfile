@@ -33,11 +33,11 @@ WORKDIR $HOME
 # Sync ISIS with conda
 RUN conda config --add channels conda-forge && \
     conda config --add channels usgs-astrogeology && \
-    conda create -y --prefix ${ISISROOT} && \
-    conda install -y --prefix ${ISISROOT} isis
+    conda create -yc --prefix ${ISISROOT} && \
+    conda install -yc --prefix ${ISISROOT} isis
 
 # Sync partial `base` data
-RUN rsync -azv --delete --partial --inplace \
+RUN rsync -azv --delete --partial \
     --exclude='testData' \
     isisdist.astrogeology.usgs.gov::isisdata/data/base $ISIS3DATA && \
     rm -rf $ISISROOT/doc $ISISROOT/docs
