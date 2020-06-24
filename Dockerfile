@@ -1,60 +1,31 @@
-FROM continuumio/miniconda3:latest
+FROM conda/miniconda3:latest
 
 LABEL maintainer="ChaddFrasier"
 
-# Install shared libs and rsync, Author: Seignovert
-# also install nodejs npm
-RUN apt-get -qq update && \
-    apt-get install -y rsync \
-    libglu1 \
-    libgl1 && \
-    apt-get -y install build-essential libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
-    librsvg2-dev && \
+# update and init the conda environment
+RUN conda update -n base -c defaults conda && \
+    conda init bash && \
+    apt-get -qq update && apt-get install -y rsync libglu1 libgl1 build-essential \
+    libcairo2-dev libpango1.0-dev libjpeg-dev librsvg2-dev && \
     apt-get install -y curl software-properties-common && \
     curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
-    apt-get install -y nodejs
+    apt-get install -y nodejs && \
+    exec bash
 
-# Set ENV variables, Author: Seignovert
-ENV HOME=/usgs
-ENV ISISROOT=$HOME/isis ISIS3DATA=$HOME/data
-ENV PATH=$PATH:$ISISROOT/bin
+ENV CONDA_PREFIX /usr/local
+# create the isis env and install isis
+RUN conda create -n isis python=3.6 && \
+    echo "conda activate isis" && \
+    conda config --env --add channels conda-forge && \
+    conda config --env --add channels usgs-astrogeology && \
+    conda install -c usgs-astrogeology isis && \
+    python /usr/local/scripts/isis3VarInit.py
 
-# create app dir
-ENV APP=/PIPS
-
-# Create user and home, Author: Seignovert
-RUN useradd --create-home --home-dir $HOME --shell /bin/bash usgs
-
-# install isis3, Author: Seignovert
-WORKDIR $HOME
-
-# Sync ISIS with conda
-RUN conda config --add channels conda-forge && \
-    conda config --add channels usgs-astrogeology && \
-    conda create -yc --prefix ${ISISROOT} && \
-    conda install -yc --prefix ${ISISROOT} isis
-
-# Sync partial `base` data
-RUN rsync -azv --delete --partial \
-    --exclude='testData' \
-    isisdist.astrogeology.usgs.gov::isisdata/data/base $ISIS3DATA && \
-    rm -rf $ISISROOT/doc $ISISROOT/docs
-
-# Add Isis User Preferences
-RUN mkdir -p $HOME/.Isis && echo "Group = UserInterface\n\
-  ProgressBar      = Off\n\
-  HistoryRecording = Off\n\
-EndGroup\n\
-\n\
-Group = SessionLog\n\
-  TerminalOutput = Off\n\
-  FileOutput     = Off\n\
-EndGroup" > $HOME/.Isis/IsisPreferences
+# download required data
+RUN rsync -azv --delete --partial isisdist.astrogeology.usgs.gov::isisdata/data/base $ISISDATA
 
 # clone code into PIPS from root
-WORKDIR $HOME/..
+WORKDIR $CONDA_PREFIX
 
 # command to disable container caching
 ARG BREAKCACHE=1
@@ -63,15 +34,11 @@ ARG BREAKCACHE=1
 RUN git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
 
 # move to working directory
-WORKDIR $APP
+WORKDIR /PIPS
 
 # install all modules and update canvas and update binaries
 RUN npm install && \
     npm install canvas && \
     npm rebuild bcrypt --update-binary
 
-# expose containers port 8080
-EXPOSE 8080
-
-# set the run command
-CMD ["node","server.js"]
+RUN echo "\n\nTESTING\n\n" && echo "lowpass -h"
