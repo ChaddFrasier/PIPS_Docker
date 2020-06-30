@@ -1,31 +1,62 @@
-FROM conda/miniconda3:latest
+FROM continuumio/miniconda3
 
-LABEL maintainer="ChaddFrasier"
+LABEL maintainer="ChaddFrasier<cmf339@nau.edu>"
 
-# update and init the conda environment
-RUN conda update -n base -c defaults conda && \
-    conda init bash && \
-    apt-get -qq update && apt-get install -y rsync libglu1 libgl1 build-essential \
-    libcairo2-dev libpango1.0-dev libjpeg-dev librsvg2-dev && \
-    apt-get install -y curl software-properties-common && \
-    curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
-    apt-get install -y nodejs && \
-    exec bash
+ENV DEBIAN_FRONTEND=noninteractive
 
-ENV CONDA_PREFIX /usr/local
-# create the isis env and install isis
-RUN conda create -n isis python=3.6 && \
-    echo "conda activate isis" && \
-    conda config --env --add channels conda-forge && \
-    conda config --env --add channels usgs-astrogeology && \
-    conda install -c usgs-astrogeology isis && \
-    python /usr/local/scripts/isis3VarInit.py
+# install pre-reqs
+RUN apt-get -y update
+RUN apt-get install -y rsync wget
+RUN apt-get install -y libglu1
+RUN apt-get install -y libgl1
+RUN apt-get -y install build-essential
+RUN apt-get install -y libcairo2-dev
+RUN apt-get install -y libpango1.0-dev
+RUN apt-get install -y libjpeg-dev
+RUN apt-get install -y librsvg2-dev
+RUN apt-get install -y curl software-properties-common && \
+    curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install -y nodejs
 
-# download required data
-RUN rsync -azv --delete --partial isisdist.astrogeology.usgs.gov::isisdata/data/base $ISISDATA
+# Set ENV variables, Author: Seignovert
+ENV HOME=/usgs
+ENV ISISROOT=$HOME/isis3 ISIS3DATA=$HOME/data
+ENV PATH=$PATH:$ISISROOT/bin
+
+# create app dir
+ENV APP=/PIPS
+
+# Create user and home, Author: Seignovert
+RUN useradd --create-home --home-dir $HOME --shell /bin/bash usgs
+
+# install isis3, Author: Seignovert
+WORKDIR $HOME
+
+# Sync ISIS with conda
+RUN conda config --add channels conda-forge && \
+    conda config --add channels usgs-astrogeology && \
+    conda create -y --prefix ${ISISROOT} && \
+    conda install -y --prefix ${ISISROOT} isis3
+
+    # Sync partial `base` data
+RUN rsync -azv --delete --partial --inplace \
+    --exclude='testData' \
+    isisdist.astrogeology.usgs.gov::isis3data/data/base $ISIS3DATA && \
+    rm -rf $ISISROOT/doc $ISISROOT/docs
+
+    # Add Isis User Preferences
+RUN mkdir -p $HOME/.Isis && echo "Group = UserInterface\n\
+    ProgressBar      = Off\n\
+    HistoryRecording = Off\n\
+EndGroup\n\
+\n\
+Group = SessionLog\n\
+    TerminalOutput = Off\n\
+    FileOutput     = Off\n\
+EndGroup" > $HOME/.Isis/IsisPreferences
 
 # clone code into PIPS from root
-WORKDIR $CONDA_PREFIX
+WORKDIR $HOME/..
 
 # command to disable container caching
 ARG BREAKCACHE=1
@@ -34,11 +65,15 @@ ARG BREAKCACHE=1
 RUN git clone https://github.com/ChaddFrasier/PIPS.git ./PIPS
 
 # move to working directory
-WORKDIR /PIPS
+WORKDIR $APP
 
 # install all modules and update canvas and update binaries
 RUN npm install && \
     npm install canvas && \
     npm rebuild bcrypt --update-binary
 
-RUN echo "\n\nTESTING\n\n" && echo "lowpass -h"
+# expose containers port 8080
+EXPOSE 8080
+
+# set the run command
+CMD ["node","server.js"]
