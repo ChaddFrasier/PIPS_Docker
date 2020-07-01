@@ -40,9 +40,8 @@ RUN conda config --add channels conda-forge && \
 
     # Sync partial `base` data
 RUN rsync -azv --delete --partial --inplace \
-    --exclude='testData' \
-    isisdist.astrogeology.usgs.gov::isis3data/data/base $ISIS3DATA && \
-    rm -rf $ISISROOT/doc $ISISROOT/docs
+    --exclude 'testData'  --exclude $ISISROOT/doc --exclude $ISISROOT/docs \
+    isisdist.astrogeology.usgs.gov::isis3data/data/base $ISIS3DATA
 
     # Add Isis User Preferences
 RUN mkdir -p $HOME/.Isis && echo "Group = UserInterface\n\
