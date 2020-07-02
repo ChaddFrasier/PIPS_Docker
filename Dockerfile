@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3:latest
 
 LABEL maintainer="ChaddFrasier<cmf339@nau.edu>"
 
@@ -40,7 +40,7 @@ RUN conda config --add channels conda-forge && \
 
     # Sync partial `base` data
 RUN rsync -azv --delete --partial --inplace \
-    --exclude 'testData'  --exclude $ISISROOT/doc --exclude $ISISROOT/docs \
+    --exclude 'testData'  --exclude '$ISISROOT/doc' --exclude '$ISISROOT/docs' \
     isisdist.astrogeology.usgs.gov::isis3data/data/base $ISIS3DATA
 
     # Add Isis User Preferences
